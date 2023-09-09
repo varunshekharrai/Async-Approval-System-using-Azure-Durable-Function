@@ -9,14 +9,22 @@ using Microsoft.Extensions.Logging;
 
 namespace DurableFunctionsOrchestration
 {
+    /// <summary>
+    /// This is the orchestration class.
+    /// </summary>
     public static class DurableFunctionsOrchestration
     {
+        /// <summary>
+        /// This is the orchestration function that will be called from the start HTTP trigger.
+        /// </summary>
+        /// <param name="context">This contains the data of the orchestration instance like instance id, etc.</param>
+        /// <returns></returns>
         [FunctionName("DurableFunctionsOrchestration")]
         public static async Task<bool> RunOrchestratorAsync(
             [OrchestrationTrigger] IDurableOrchestrationContext context)
         {
             var isApproved = false;
-            
+
             using (var timeoutCts = new CancellationTokenSource())
             {
                 int timeout = 5;
@@ -50,20 +58,6 @@ namespace DurableFunctionsOrchestration
 
                 return isApproved;
             }
-        }
-
-        [FunctionName("DurableFunctionsOrchestration_HttpStart")]
-        public static async Task<HttpResponseMessage> HttpStart(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestMessage req,
-            [DurableClient] IDurableOrchestrationClient starter,
-            ILogger log)
-        {
-            // Function input comes from the request content.
-            string instanceId = await starter.StartNewAsync("DurableFunctionsOrchestration", null);
-
-            log.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
-
-            return starter.CreateCheckStatusResponse(req, instanceId);
         }
     }
 }
