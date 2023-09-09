@@ -1,5 +1,5 @@
 # Async Approval System using Azure Durable Function
-This is an async approval system created using Azure Durable Function using HTTP triggers.
+This is an async approval system created using Azure Durable Function with HTTP triggers and Azure Storage.
 
 ## Approval Workflow
 1. To start the orchestration make a GET api call to `http://<baseUrl>/api/start`.
