@@ -27,9 +27,9 @@ public static class HttpTriggerStartOrchestration
         ILogger log)
     {
         // Function input comes from the request content.
-        string instanceId = await starter.StartNewAsync("DurableFunctionsOrchestration", null);
+        var instanceId = await starter.StartNewAsync("DurableFunctionsOrchestration");
 
-        log.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
+        log.LogInformation($"Started orchestration with ID = '{instanceId}'.");
 
         return starter.CreateCheckStatusResponse(req, instanceId);
     }

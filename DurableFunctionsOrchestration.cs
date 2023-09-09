@@ -1,10 +1,8 @@
 using System;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
-using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 
 namespace DurableFunctionsOrchestration
@@ -28,42 +26,35 @@ namespace DurableFunctionsOrchestration
             log.LogInformation($"Initialised orchestration with ID = '{context.InstanceId}'.");
             var isApproved = false;
 
-            using (var timeoutCts = new CancellationTokenSource())
+            using var timeoutCts = new CancellationTokenSource();
+            int timeout = 45;
+            DateTime expiration = context.CurrentUtcDateTime.AddSeconds(timeout);
+            Task timeoutTask = context.CreateTimer(expiration, timeoutCts.Token);
+
+            log.LogInformation($"Waiting for approval.");
+            Task<bool> approvalResponse = context.WaitForExternalEvent<bool>("ReceivedApprovalResponse");
+            Task winner = await Task.WhenAny(approvalResponse, timeoutTask);
+
+            if (winner == approvalResponse)
             {
-                int timeout = 45;
-                DateTime expiration = context.CurrentUtcDateTime.AddSeconds(timeout);
-                Task timeoutTask = context.CreateTimer(expiration, timeoutCts.Token);
-
-                log.LogInformation($"Waiting for approval.");
-                Task<bool> approvalResponse = context.WaitForExternalEvent<bool>("ReceivedApprovalResponse");
-                Task winner = await Task.WhenAny(approvalResponse, timeoutTask);
-
-                if (winner == approvalResponse)
+                log.LogInformation($"Received response ${approvalResponse.Result}.");
+                if (approvalResponse.Result)
                 {
-                    log.LogInformation($"Received response ${approvalResponse.Result}.");
-                    if (approvalResponse.Result)
-                    {
-                        isApproved = true;
-                    }
-                    else
-                    {
-                        isApproved = false;
-                    }
+                    isApproved = true;
                 }
-                else
-                {
-                    log.LogInformation($"Timed out.");
-                    isApproved = false;
-                }
-
-                if (!timeoutTask.IsCompleted)
-                {
-                    // All pending timers must be completed or cancelled before the function exits.
-                    timeoutCts.Cancel();
-                }
-
-                return isApproved;
             }
+            else
+            {
+                log.LogInformation($"Timed out.");
+            }
+
+            if (!timeoutTask.IsCompleted)
+            {
+                // All pending timers must be completed or cancelled before the function exits.
+                timeoutCts.Cancel();
+            }
+
+            return isApproved;
         }
     }
 }

@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Extensions.Logging;
 
@@ -38,7 +37,7 @@ public static class HttpTriggerApproval
             if (status != null && (status.RuntimeStatus == OrchestrationRuntimeStatus.Running ||
                                    status.RuntimeStatus == OrchestrationRuntimeStatus.Pending))
             {
-                if (response.ToString().ToLower() == "approved")
+                if (response.ToString()?.ToLower() == "approved")
                     isApproved = true;
                 await orchestrationClient.RaiseEventAsync(instanceId, "ReceivedApprovalResponse", isApproved);
 
