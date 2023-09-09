@@ -24,7 +24,9 @@ public static class HttpTriggerApproval
     [FunctionName("HttpTriggerApproval")]
     public static async Task<HttpResponseMessage> RunAsync(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "approval")]
-        HttpRequest req, [DurableClient] IDurableOrchestrationClient orchestrationClient, ILogger log)
+        HttpRequest req,
+        [DurableClient] IDurableOrchestrationClient orchestrationClient,
+        ILogger log)
     {
         log.LogInformation($"Received an Approval Response");
         if (req.Query.TryGetValue("instanceId", out var instanceId) &&

@@ -19,9 +19,9 @@ public static class HttpTriggerStartOrchestration
     /// <param name="starter">The durable orchestration client.</param>
     /// <param name="log">The logger object.</param>
     /// <returns></returns>
-    [FunctionName("start")]
+    [FunctionName("HttpStart")]
     public static async Task<HttpResponseMessage> HttpStart(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "start")]
         HttpRequestMessage req,
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
