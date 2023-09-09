@@ -18,6 +18,7 @@ namespace DurableFunctionsOrchestration
         /// This is the orchestration function that will be called from the start HTTP trigger.
         /// </summary>
         /// <param name="context">This contains the data of the orchestration instance like instance id, etc.</param>
+        /// <param name="log">The logger object.</param>
         /// <returns></returns>
         [FunctionName("DurableFunctionsOrchestration")]
         public static async Task<bool> RunOrchestratorAsync(
