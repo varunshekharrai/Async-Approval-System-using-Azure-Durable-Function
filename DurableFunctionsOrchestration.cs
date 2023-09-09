@@ -21,21 +21,25 @@ namespace DurableFunctionsOrchestration
         /// <returns></returns>
         [FunctionName("DurableFunctionsOrchestration")]
         public static async Task<bool> RunOrchestratorAsync(
-            [OrchestrationTrigger] IDurableOrchestrationContext context)
+            [OrchestrationTrigger] IDurableOrchestrationContext context,
+            ILogger log)
         {
+            log.LogInformation($"Initialised orchestration with ID = '{context.InstanceId}'.");
             var isApproved = false;
 
             using (var timeoutCts = new CancellationTokenSource())
             {
-                int timeout = 5;
-                DateTime expiration = context.CurrentUtcDateTime.AddMinutes(timeout);
+                int timeout = 45;
+                DateTime expiration = context.CurrentUtcDateTime.AddSeconds(timeout);
                 Task timeoutTask = context.CreateTimer(expiration, timeoutCts.Token);
 
+                log.LogInformation($"Waiting for approval.");
                 Task<bool> approvalResponse = context.WaitForExternalEvent<bool>("ReceivedApprovalResponse");
                 Task winner = await Task.WhenAny(approvalResponse, timeoutTask);
 
                 if (winner == approvalResponse)
                 {
+                    log.LogInformation($"Received response ${approvalResponse.Result}.");
                     if (approvalResponse.Result)
                     {
                         isApproved = true;
@@ -47,6 +51,7 @@ namespace DurableFunctionsOrchestration
                 }
                 else
                 {
+                    log.LogInformation($"Timed out.");
                     isApproved = false;
                 }
 

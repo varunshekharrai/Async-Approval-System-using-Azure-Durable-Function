@@ -21,7 +21,7 @@ public static class HttpTriggerStartOrchestration
     /// <returns></returns>
     [FunctionName("start")]
     public static async Task<HttpResponseMessage> HttpStart(
-        [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")]
+        [HttpTrigger(AuthorizationLevel.Anonymous, "get")]
         HttpRequestMessage req,
         [DurableClient] IDurableOrchestrationClient starter,
         ILogger log)
